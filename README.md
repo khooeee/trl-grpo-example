@@ -108,12 +108,6 @@ This stops a **deployment** (`modal deploy`). To cancel a one-off **training** j
 
 Weights are saved on a **Modal Volume** in your workspace — not in this git repo and not on your laptop.
 
-| | |
-|--|--|
-| **Volume name** | `example-grpo-trl-checkpoints` |
-| **Path inside training / serve containers** | `/models` |
-| **Checkpoint directories** | `/models/checkpoint-1/`, `checkpoint-2/`, … |
-
 Training sets `output_dir` to `/models` in `grpo_trl.py`. With the smoke-test defaults (`max_steps=5`, `save_steps=1`), you get `checkpoint-1` through `checkpoint-5`. The `serve` function loads the **latest** `checkpoint-N` when you deploy.
 
 The **starting** weights come from Hugging Face at train time ([Qwen/Qwen2-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2-0.5B-Instruct)); only the GRPO-updated checkpoints live on the volume.
@@ -121,12 +115,19 @@ The **starting** weights come from Hugging Face at train time ([Qwen/Qwen2-0.5B-
 Inspect from your machine:
 
 ```bash
+uv run modal volume list
 uv run modal volume ls example-grpo-trl-checkpoints /
 uv run modal volume ls example-grpo-trl-checkpoints /checkpoint-5
 ```
 
-`modal app stop` does not delete the volume. See [Modal volumes](https://modal.com/docs/guide/volumes).
+Delete:
 
+```bash
+uv run modal volume delete example-grpo-trl-checkpoints
+uv run modal volume delete vllm-cache
+```
+
+See [pricing](https://modal.com/pricing) on how much GPU, CPU, memory & volumes cost.
 
 ## What this does
 
