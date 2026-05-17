@@ -57,10 +57,18 @@ After training completes, deploy an OpenAI-compatible vLLM endpoint:
 uv run modal deploy grpo_trl.py
 ```
 
-Then query the endpoint (replace `<url>` with your deployment URL):
+### Get the deployment URL
+
+Save it to a file:
 
 ```bash
-curl -X POST <url>/v1/chat/completions \
+uv run python -c "import modal; print(modal.Function.from_name('example-grpo-trl', 'serve').get_web_url())" > modal-deployment-url.txt
+```
+
+### Query the endpoint
+
+```bash
+curl -X POST "$(cat modal-deployment-url.txt)/v1/chat/completions" \
   -H 'Content-Type: application/json' \
   -d '{
     "messages": [
@@ -69,6 +77,28 @@ curl -X POST <url>/v1/chat/completions \
     "temperature": 0.7
   }'
 ```
+
+### Stop the deployment
+
+Stop the deployed app and terminate its containers (checkpoints on the volume are kept):
+
+```bash
+uv run modal app stop example-grpo-trl
+```
+
+Skip the confirmation prompt:
+
+```bash
+uv run modal app stop example-grpo-trl -y
+```
+
+List deployed or recently stopped apps:
+
+```bash
+uv run modal app list
+```
+
+This stops a **deployment** (`modal deploy`). To cancel a one-off **training** job started with `modal run --detach`, use the [Modal dashboard](https://modal.com/apps) or stop the run from that app’s history.
 
 ## What this does
 
