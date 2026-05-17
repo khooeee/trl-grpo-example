@@ -123,8 +123,8 @@ uv run modal volume ls example-grpo-trl-checkpoints /checkpoint-5
 Delete:
 
 ```bash
-uv run modal volume delete example-grpo-trl-checkpoints
-uv run modal volume delete vllm-cache
+uv run modal volume delete example-grpo-trl-checkpoints -y
+uv run modal volume delete vllm-cache -y
 ```
 
 See [pricing](https://modal.com/pricing) on how much GPU, CPU, memory & volumes cost.
