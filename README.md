@@ -67,15 +67,30 @@ uv run python -c "import modal; print(modal.Function.from_name('example-grpo-trl
 
 ### Query the endpoint
 
+Pretty-print the full response:
+
 ```bash
-curl -X POST "$(cat modal-deployment-url.txt)/v1/chat/completions" \
+curl -sS -X POST "$(cat modal-deployment-url.txt)/v1/chat/completions" \
   -H 'Content-Type: application/json' \
   -d '{
     "messages": [
       {"role": "user", "content": "Write a Python function that returns the sum of a list."}
     ],
     "temperature": 0.7
-  }'
+  }' | jq
+```
+
+Print only the assistant reply:
+
+```bash
+curl -sS -X POST "$(cat modal-deployment-url.txt)/v1/chat/completions" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "Write a Python function that returns the sum of a list."}
+    ],
+    "temperature": 0.7
+  }' | jq -r '.choices[0].message.content'
 ```
 
 ### Stop the deployment
