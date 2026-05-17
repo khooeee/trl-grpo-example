@@ -7,17 +7,16 @@ Based on the official example: [Train a model to solve coding problems using GRP
 ## Prerequisites
 
 1. A [Modal](https://modal.com) account with GPU access (the example uses **H100**).
-2. The [Modal CLI](https://modal.com/docs/guide) installed locally.
-3. A [Weights & Biases](https://wandb.ai) account (training logs to W&B).
+2. A [Weights & Biases](https://wandb.ai) account (training logs to W&B).
 
 ## Setup
-
-Install [uv](https://docs.astral.sh/uv/), then sync the local environment (Modal CLI only — training deps run in the Modal image):
 
 ```bash
 uv sync
 uv run modal setup
 ```
+
+Get API key from https://wandb.ai/settings
 
 Create a Modal secret named `wandb-secret` with your W&B API key:
 
@@ -44,8 +43,6 @@ vLLM **colocate mode** (1× H100, shares GPU memory with training):
 ```bash
 uv run modal run --detach grpo_trl.py::train_vllm_colocate_mode
 ```
-
-Checkpoints are written to the Modal volume `example-grpo-trl-checkpoints` at `/models`.
 
 The default run uses 128 dataset rows and `max_steps=5` for a quick smoke test. Increase or remove those limits in `start_grpo_trainer()` for a full run.
 
@@ -95,19 +92,41 @@ curl -sS -X POST "$(cat modal-deployment-url.txt)/v1/chat/completions" \
 
 ### Stop the deployment
 
-Stop the deployed app and terminate its containers (checkpoints on the volume are kept):
-
 ```bash
 uv run modal app stop example-grpo-trl -y
 ```
 
-List deployed or recently stopped apps:
+List apps:
 
 ```bash
 uv run modal app list
 ```
 
-This stops a **deployment** (`modal deploy`). To cancel a one-off **training** job started with `modal run --detach`, use the [Modal dashboard](https://modal.com/apps) or stop the run from that app’s history.
+This stops a **deployment** (`modal deploy`). To cancel a one-off **training** job started with `modal run --detach`, use the [Modal dashboard](https://modal.com/apps).
+
+## Storage
+
+Weights are saved on a **Modal Volume** in your workspace — not in this git repo and not on your laptop.
+
+| | |
+|--|--|
+| **Volume name** | `example-grpo-trl-checkpoints` |
+| **Path inside training / serve containers** | `/models` |
+| **Checkpoint directories** | `/models/checkpoint-1/`, `checkpoint-2/`, … |
+
+Training sets `output_dir` to `/models` in `grpo_trl.py`. With the smoke-test defaults (`max_steps=5`, `save_steps=1`), you get `checkpoint-1` through `checkpoint-5`. The `serve` function loads the **latest** `checkpoint-N` when you deploy.
+
+The **starting** weights come from Hugging Face at train time ([Qwen/Qwen2-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2-0.5B-Instruct)); only the GRPO-updated checkpoints live on the volume.
+
+Inspect from your machine:
+
+```bash
+uv run modal volume ls example-grpo-trl-checkpoints /
+uv run modal volume ls example-grpo-trl-checkpoints /checkpoint-5
+```
+
+`modal app stop` does not delete the volume. See [Modal volumes](https://modal.com/docs/guide/volumes).
+
 
 ## What this does
 
