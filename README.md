@@ -98,12 +98,6 @@ curl -sS -X POST "$(cat modal-deployment-url.txt)/v1/chat/completions" \
 Stop the deployed app and terminate its containers (checkpoints on the volume are kept):
 
 ```bash
-uv run modal app stop example-grpo-trl
-```
-
-Skip the confirmation prompt:
-
-```bash
 uv run modal app stop example-grpo-trl -y
 ```
 
